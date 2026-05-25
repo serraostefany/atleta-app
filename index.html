@@ -9,7 +9,8 @@
 <meta name="theme-color" content="#080808">
 <title>Atleta</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -627,7 +628,7 @@ let totalKcal=0,totalProt=0,totalCarb=0,totalFat=0;
 const loggedMeals=new Set();
 
 // ── DATE + COUNTDOWN ──
-const marathon=new Date('2025-09-20');
+const marathon=new Date('2026-09-20');
 const today=new Date();
 const daysLeft=Math.ceil((marathon-today)/86400000);
 document.getElementById('home-days').textContent=daysLeft;
