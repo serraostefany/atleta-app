@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Atleta">
+<meta name="theme-color" content="#080808">
+<title>Atleta</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080808; --bg2:#0f0f0f; --bg3:#161616; --bg4:#1e1e1e; --bg5:#262626;
+  --gold:#c9a84c; --gold2:#e8c97a; --gold-dim:rgba(201,168,76,0.12); --gold-glow:rgba(201,168,76,0.05);
+  --vital:#39ff7e; --vital-dim:rgba(57,255,126,0.1);
+  --rose:#ff6b8a; --rose-dim:rgba(255,107,138,0.1);
+  --sky:#4fc3f7; --sky-dim:rgba(79,195,247,0.1);
+  --amber:#ffb347; --amber-dim:rgba(255,179,71,0.1);
+  --lilac:#c084fc; --lilac-dim:rgba(192,132,252,0.1);
+  --text:#f0ece4; --text2:rgba(240,236,228,0.45); --text3:rgba(240,236,228,0.22);
+  --sep:rgba(240,236,228,0.06); --sep2:rgba(240,236,228,0.1);
+  --glass:rgba(255,255,255,0.03); --glass2:rgba(255,255,255,0.055);
+  --r:20px; --rsm:12px; --rxs:8px;
+  --sf:'DM Sans',-apple-system,sans-serif; --disp:'Cormorant Garamond',Georgia,serif;
+  --safe-top:env(safe-area-inset-top,44px); --safe-bottom:env(safe-area-inset-bottom,34px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sf);overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");opacity:.7;}
+.app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1;}
+.status-bar{height:var(--safe-top);flex-shrink:0;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(88px + var(--safe-bottom));}
+.screen::-webkit-scrollbar{display:none;}
+.page{display:none;animation:pgIn .2s cubic-bezier(.4,0,.2,1);}
+.page.active{display:block;}
+@keyframes pgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* TYPE */
+.disp{font-family:var(--disp);font-weight:300;letter-spacing:-.5px;}
+.disp em{font-style:italic;color:var(--gold);}
+.label-caps{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--text3);}
+.sec-label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:18px 20px 8px;}
+
+/* CARDS */
+.card{background:var(--glass);border:.5px solid var(--sep2);border-radius:var(--r);margin:0 16px 10px;overflow:hidden;}
+.card-gold{background:var(--gold-glow);border-color:rgba(201,168,76,0.18);}
+.card-vital{background:rgba(57,255,126,0.03);border-color:rgba(57,255,126,0.12);}
+.card-rose{background:rgba(255,107,138,0.03);border-color:rgba(255,107,138,0.12);}
+
+/* ROWS */
+.row{display:flex;align-items:center;padding:13px 20px;border-bottom:.5px solid var(--sep);gap:12px;}
+.row:last-child{border-bottom:none;}
+.row-label{font-size:15px;letter-spacing:-.3px;flex:1;}
+.row-val{font-size:14px;color:var(--text2);}
+.badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;}
+
+/* VITALS GRID */
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:10px;}
+.vital-card{background:var(--glass);border:.5px solid var(--sep2);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.ring-svg{width:68px;height:68px;}
+.vital-num{font-family:var(--disp);font-size:26px;font-weight:300;letter-spacing:-1px;line-height:1;}
+.vital-name{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);}
+
+/* MACRO SUMMARY */
+.macro-hero{padding:18px 20px 16px;}
+.macro-big{font-family:var(--disp);font-size:48px;font-weight:300;letter-spacing:-2px;line-height:1;}
+.track{height:3px;background:var(--bg5);border-radius:2px;overflow:hidden;margin:10px 0 16px;}
+.fill{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.macro-row{display:grid;grid-template-columns:repeat(3,1fr);}
+.macro-item{text-align:center;padding:0 6px;border-right:.5px solid var(--sep);}
+.macro-item:last-child{border-right:none;}
+.macro-val{font-family:var(--disp);font-size:20px;font-weight:400;letter-spacing:-.5px;}
+.macro-name{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:2px;}
+
+/* MEAL CARDS */
+.meal-header{display:flex;align-items:center;padding:14px 20px 10px;gap:12px;border-bottom:.5px solid var(--sep);}
+.meal-time{font-size:12px;color:var(--gold);letter-spacing:1px;min-width:44px;}
+.meal-name{font-size:15px;font-weight:500;letter-spacing:-.3px;flex:1;}
+.meal-kcal-badge{font-family:var(--disp);font-size:18px;color:var(--text2);}
+.meal-body{padding:0 20px 14px;}
+.meal-option{margin-top:10px;}
+.option-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.food-line{font-size:13px;color:var(--text2);line-height:1.8;letter-spacing:-.1px;}
+.food-line strong{color:var(--text);font-weight:500;}
+.meal-log-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border-top:.5px solid var(--sep);font-size:13px;color:var(--gold);cursor:pointer;background:none;border-left:none;border-right:none;border-bottom:none;width:100%;font-family:var(--sf);letter-spacing:-.1px;}
+.meal-logged{background:var(--vital-dim);padding:10px 20px;font-size:13px;color:var(--vital);display:flex;align-items:center;gap:8px;}
+
+/* SLIDERS */
+.sl-block{padding:13px 20px;border-bottom:.5px solid var(--sep);}
+.sl-block:last-of-type{border-bottom:none;}
+.sl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.sl-name{font-size:14px;letter-spacing:-.2px;color:var(--text2);}
+.sl-val{font-family:var(--disp);font-size:22px;font-weight:300;color:var(--text);}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:var(--bg5);border-radius:1px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.5);cursor:pointer;}
+
+/* TOGGLE */
+.tog-row{display:flex;align-items:center;padding:13px 20px;border-bottom:.5px solid var(--sep);gap:14px;}
+.tog-row:last-child{border-bottom:none;}
+.tog-info{flex:1;}
+.tog-name{font-size:15px;letter-spacing:-.3px;}
+.tog-dose{font-size:12px;color:var(--text3);margin-top:2px;}
+.ios-tog{width:48px;height:28px;border-radius:14px;background:var(--bg5);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:.5px solid var(--sep2);}
+.ios-tog.on{background:var(--vital);border-color:var(--vital);}
+.ios-tog-thumb{width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .22s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.4);}
+.ios-tog.on .ios-tog-thumb{left:22px;}
+
+/* BTNS */
+.btn{border:none;border-radius:var(--rsm);padding:14px 20px;font-family:var(--sf);font-size:15px;font-weight:500;cursor:pointer;width:100%;transition:opacity .15s,transform .1s;letter-spacing:-.2px;}
+.btn:active{opacity:.75;transform:scale(.98);}
+.btn-gold{background:linear-gradient(135deg,#c9a84c,#e8c97a);color:#080808;}
+.btn-ghost{background:var(--glass2);color:var(--gold);border:.5px solid rgba(201,168,76,.3);}
+.btn-ghost-vital{background:var(--glass2);color:var(--vital);border:.5px solid rgba(57,255,126,.3);}
+.btn-ghost-rose{background:var(--glass2);color:var(--rose);border:.5px solid rgba(255,107,138,.3);}
+
+/* INPUT */
+.inp{background:var(--bg3);border:.5px solid var(--sep2);border-radius:var(--rsm);padding:13px 16px;font-size:15px;color:var(--text);width:100%;outline:none;font-family:var(--sf);letter-spacing:-.2px;transition:border-color .2s;}
+.inp:focus{border-color:rgba(201,168,76,.4);}
+.inp::placeholder{color:var(--text3);}
+
+/* AI */
+.ai-bubble{background:var(--bg3);border:.5px solid var(--sep2);border-radius:var(--r);padding:18px 20px;margin:0 16px 10px;font-size:14px;line-height:1.75;color:var(--text2);letter-spacing:-.1px;}
+.ai-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.ai-label::before{content:'';width:14px;height:.5px;background:var(--gold);}
+
+/* SPINNER */
+.spin{display:inline-block;width:14px;height:14px;border:1.5px solid var(--bg5);border-top-color:var(--gold);border-radius:50%;animation:spn .7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spn{to{transform:rotate(360deg)}}
+
+/* UPLOAD AREA */
+.upload-area{border:1px dashed rgba(201,168,76,.3);border-radius:var(--r);padding:32px 20px;text-align:center;cursor:pointer;transition:background .2s;margin:0 16px 10px;}
+.upload-area:active{background:var(--gold-dim);}
+.upload-icon{font-size:40px;margin-bottom:12px;}
+.upload-title{font-family:var(--disp);font-size:22px;font-weight:400;margin-bottom:6px;}
+.upload-sub{font-size:13px;color:var(--text2);line-height:1.6;}
+
+/* WEEK STRIP */
+.week-strip{display:flex;gap:6px;padding:4px 16px 8px;overflow-x:auto;}
+.week-strip::-webkit-scrollbar{display:none;}
+.day-pill{flex-shrink:0;width:46px;border-radius:23px;padding:8px 0;text-align:center;border:.5px solid var(--sep);}
+.day-pill .dn{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:5px;}
+.day-pill .dd{font-family:var(--disp);font-size:20px;font-weight:400;color:var(--text2);}
+.day-pill.today{background:var(--gold-dim);border-color:rgba(201,168,76,.35);}
+.day-pill.today .dd{color:var(--gold2);}
+.day-pill.today .dn{color:var(--gold);}
+.day-pill.done .dd{color:var(--vital);}
+
+/* PROGRESS RING REMAINING */
+.remain-ring{display:flex;align-items:center;gap:16px;padding:16px 20px;}
+.remain-text{flex:1;}
+.remain-num{font-family:var(--disp);font-size:36px;font-weight:300;letter-spacing:-1px;color:var(--amber);}
+.remain-label{font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+
+/* INSIGHT */
+.ins-row{padding:14px 20px;border-bottom:.5px solid var(--sep);}
+.ins-row:last-child{border-bottom:none;}
+.ins-cat{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.ins-text{font-size:14px;color:var(--text2);line-height:1.65;letter-spacing:-.1px;}
+.ins-text strong{color:var(--text);font-weight:500;}
+
+/* QUICK ACTIONS */
+.qa-grid{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px;}
+.qa-btn{background:var(--bg3);border:.5px solid var(--sep2);border-radius:var(--rsm);padding:9px 13px;font-size:12px;color:var(--gold);font-family:var(--sf);cursor:pointer;letter-spacing:-.1px;}
+.qa-btn:active{background:var(--gold-dim);}
+
+/* TAB BAR */
+.tab-bar{height:calc(68px + var(--safe-bottom));background:rgba(8,8,8,.92);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);border-top:.5px solid var(--sep2);display:flex;align-items:flex-start;padding-top:10px;padding-bottom:var(--safe-bottom);flex-shrink:0;}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:2px 0;}
+.tab-item:active{opacity:.6;}
+.tab-icon{font-size:22px;line-height:1;}
+.tab-label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);}
+.tab-item.active .tab-label{color:var(--gold);}
+.tab-bar-line{width:20px;height:2px;background:var(--gold);border-radius:1px;margin-bottom:2px;display:none;}
+.tab-item.active .tab-bar-line{display:block;}
+
+/* CYCLE */
+.cycle-phases{display:flex;gap:4px;margin:10px 0;}
+.c-phase{flex:1;border-radius:var(--rxs);padding:10px 4px;text-align:center;font-size:11px;border:.5px solid transparent;}
+.c-phase.now{border-color:var(--rose);}
+.c-name{font-weight:500;margin-bottom:3px;}
+.c-days{font-size:10px;opacity:.6;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="status-bar"></div>
+  <div class="screen" id="screen">
+
+    <!-- ═══════════ HOME ═══════════ -->
+    <div class="page active" id="page-home">
+      <div style="padding:14px 20px 6px;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-family:var(--disp);font-style:italic;font-size:13px;color:var(--text2);margin-bottom:3px;">boa corrida</div>
+          <div class="disp" style="font-size:38px;line-height:1.05;" id="home-date-el">—</div>
+        </div>
+        <div style="text-align:right;padding-top:8px;">
+          <div style="background:linear-gradient(135deg,var(--gold),var(--gold2),var(--vital));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:var(--disp);font-size:52px;font-weight:300;letter-spacing:-2px;line-height:1;" id="home-days">—</div>
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:2px;">dias · 20 set</div>
+        </div>
+      </div>
+
+      <!-- MACRO SUMMARY CARD -->
+      <div style="padding:0 16px 10px;">
+        <div class="card card-gold">
+          <div class="macro-hero">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div class="label-caps" style="margin-bottom:4px;">calorias hoje</div>
+                <div style="display:flex;align-items:baseline;gap:6px;">
+                  <span class="macro-big" id="h-kcal">0</span>
+                  <span style="font-size:13px;color:var(--text3);">/ <span id="h-meta">1800</span> kcal</span>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div class="label-caps" style="margin-bottom:4px;">faltam</div>
+                <div class="disp" style="font-size:30px;font-weight:300;color:var(--amber);" id="h-rest">1800</div>
+              </div>
+            </div>
+            <div class="track"><div class="fill" id="h-bar" style="background:linear-gradient(90deg,var(--amber),var(--gold));width:0%"></div></div>
+            <div class="macro-row">
+              <div class="macro-item"><div class="macro-val" id="h-prot" style="color:var(--sky);">0g</div><div class="macro-name">proteína</div></div>
+              <div class="macro-item"><div class="macro-val" id="h-carb" style="color:var(--amber);">0g</div><div class="macro-name">carbo</div></div>
+              <div class="macro-item"><div class="macro-val" id="h-fat" style="color:var(--rose);">0g</div><div class="macro-name">gordura</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VITALS -->
+      <div class="vitals-grid">
+        <div class="vital-card">
+          <svg class="ring-svg" viewBox="0 0 68 68"><circle cx="34" cy="34" r="26" fill="none" stroke="rgba(255,107,138,0.1)" stroke-width="5.5"/><circle cx="34" cy="34" r="26" fill="none" stroke="var(--rose)" stroke-width="5.5" stroke-linecap="round" stroke-dasharray="163" id="r-sono" stroke-dashoffset="100" transform="rotate(-90 34 34)"/></svg>
+          <div class="vital-num" style="color:var(--rose);" id="h-sono">—</div><div class="vital-name">sono</div><div style="font-size:9px;color:var(--text3);">ringconn</div>
+        </div>
+        <div class="vital-card">
+          <svg class="ring-svg" viewBox="0 0 68 68"><circle cx="34" cy="34" r="26" fill="none" stroke="rgba(57,255,126,0.1)" stroke-width="5.5"/><circle cx="34" cy="34" r="26" fill="none" stroke="var(--vital)" stroke-width="5.5" stroke-linecap="round" stroke-dasharray="163" id="r-hrv" stroke-dashoffset="80" transform="rotate(-90 34 34)"/></svg>
+          <div class="vital-num" style="color:var(--vital);" id="h-hrv">—</div><div class="vital-name">hrv</div><div style="font-size:9px;color:var(--text3);">garmin</div>
+        </div>
+        <div class="vital-card">
+          <svg class="ring-svg" viewBox="0 0 68 68"><circle cx="34" cy="34" r="26" fill="none" stroke="rgba(79,195,247,0.1)" stroke-width="5.5"/><circle cx="34" cy="34" r="26" fill="none" stroke="var(--sky)" stroke-width="5.5" stroke-linecap="round" stroke-dasharray="163" id="r-agua" stroke-dashoffset="110" transform="rotate(-90 34 34)"/></svg>
+          <div class="vital-num" style="color:var(--sky);" id="h-agua">—</div><div class="vital-name">hidratação</div><div style="font-size:9px;color:var(--text3);">meta 2,5L</div>
+        </div>
+        <div class="vital-card">
+          <svg class="ring-svg" viewBox="0 0 68 68"><circle cx="34" cy="34" r="26" fill="none" stroke="rgba(255,179,71,0.1)" stroke-width="5.5"/><circle cx="34" cy="34" r="26" fill="none" stroke="var(--amber)" stroke-width="5.5" stroke-linecap="round" stroke-dasharray="163" id="r-energia" stroke-dashoffset="130" transform="rotate(-90 34 34)"/></svg>
+          <div class="vital-num" style="color:var(--amber);" id="h-energia">—</div><div class="vital-name">energia</div><div style="font-size:9px;color:var(--text3);">auto</div>
+        </div>
+      </div>
+
+      <div class="sec-label">esta semana</div>
+      <div class="week-strip" id="week-strip"></div>
+
+      <div class="sec-label">treino de hoje</div>
+      <div class="card" style="margin-bottom:6px;">
+        <div class="row" style="border:none;">
+          <div style="flex:1;"><div style="font-size:16px;letter-spacing:-.4px;margin-bottom:3px;" id="h-workout">Long run 28km</div><div style="font-size:13px;color:var(--text2);" id="h-workout-sub">Pace Z2 · sábado</div></div>
+          <span class="badge" style="background:var(--vital-dim);color:var(--vital);">hoje</span>
+        </div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- ═══════════ DIETA ═══════════ -->
+    <div class="page" id="page-dieta">
+      <div style="padding:14px 20px 4px;">
+        <div class="disp" style="font-size:38px;">Dieta</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px;">Cardápio Sthefany Serrão · Helena Coelho CRN3-87006</div>
+      </div>
+
+      <!-- MACRO PROGRESS -->
+      <div style="padding:8px 16px 10px;">
+        <div class="card card-gold">
+          <div class="macro-hero">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+              <div class="label-caps">consumido hoje</div>
+              <div style="font-size:13px;color:var(--text3);"><span id="d-kcal">0</span> / <span id="d-meta">1800</span> kcal</div>
+            </div>
+            <div class="track"><div class="fill" id="d-bar" style="background:linear-gradient(90deg,var(--amber),var(--gold));width:0%"></div></div>
+            <div class="macro-row">
+              <div class="macro-item"><div class="macro-val" id="d-prot" style="color:var(--sky);">0g</div><div class="macro-name">prot</div></div>
+              <div class="macro-item"><div class="macro-val" id="d-carb" style="color:var(--amber);">0g</div><div class="macro-name">carbo</div></div>
+              <div class="macro-item"><div class="macro-val" id="d-fat" style="color:var(--rose);">0g</div><div class="macro-name">gord</div></div>
+            </div>
+            <div style="margin-top:16px;padding-top:14px;border-top:.5px solid var(--sep);display:flex;justify-content:space-between;align-items:center;">
+              <div><div class="label-caps">ainda faltam</div><div class="disp" style="font-size:32px;color:var(--amber);" id="d-rest-kcal">1800 kcal</div></div>
+              <button class="btn btn-ghost" style="width:auto;padding:10px 16px;font-size:13px;" onclick="goTab('insights');document.getElementById('ia-input').value='Com base no meu cardápio e o que já comi hoje, o que devo comer agora?';setTimeout(perguntarIA,100)">Sugestão IA ✦</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEALS FROM CARDAPIO -->
+      <div class="sec-label">06:00 — pré-treino</div>
+      <div class="card" id="meal-pretreino">
+        <div class="meal-header">
+          <span class="meal-time">06:00</span>
+          <span class="meal-name">Pré-treino</span>
+          <span class="meal-kcal-badge" id="kcal-pt">~60 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="option-label">Dias de semana</div>
+          <div class="food-line">☕ <strong>Ultracoffee</strong> — 1 dosador (10g)</div>
+          <div class="option-label" style="margin-top:10px;">Pré-longo (fim de semana)</div>
+          <div class="food-line">☕ Ultracoffee 10g + <strong>Pão integral</strong> 25g + Geleia s/ açúcar 9,5g</div>
+          <div class="food-line">ou ☕ + <strong>Banana prata</strong> média + Mel 3g</div>
+          <div class="food-line">ou ☕ + <strong>Suco de uva integral</strong> 165ml</div>
+          <div style="margin-top:8px;font-size:12px;color:var(--gold);letter-spacing:-.1px;">⏱ Consumir até 30 min antes do treino</div>
+        </div>
+        <button class="meal-log-btn" onclick="logMeal('pretreino',60,3,10,1)">✓ Marcar como consumido</button>
+      </div>
+
+      <div class="sec-label">08:00 — café da manhã</div>
+      <div class="card" id="meal-cafe">
+        <div class="meal-header">
+          <span class="meal-time">08:00</span>
+          <span class="meal-name">Café da manhã</span>
+          <span class="meal-kcal-badge" id="kcal-cafe">~380 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="option-label">Opção 1 — pão com ovo</div>
+          <div class="food-line">🍞 Pão integral 50g + 🥚 2 ovos cozidos + Queijo minas/muçarela/cottage + 🍓 Frutas</div>
+          <div class="option-label" style="margin-top:8px;">Opção 2 — pão sem ovo</div>
+          <div class="food-line">🍞 Pão integral 50g + Queijo 2 fatias/cottage/abacate/hummos + 🍓 Frutas</div>
+          <div class="food-line">+ Fresh Whey Dux avelã 0,5 dose (15,5g)</div>
+          <div style="margin-top:8px;padding:8px 10px;background:var(--gold-dim);border-radius:var(--rxs);font-size:12px;color:var(--gold2);">🎯 Objetivo: testar géis com mais carbo (paceit e maurten)</div>
+        </div>
+        <button class="meal-log-btn" onclick="logMeal('cafe',380,25,45,12)">✓ Marcar como consumido</button>
+      </div>
+
+      <div class="sec-label">12:00 — almoço</div>
+      <div class="card" id="meal-almoco">
+        <div class="meal-header">
+          <span class="meal-time">12:00</span>
+          <span class="meal-name">Almoço</span>
+          <span class="meal-kcal-badge" id="kcal-almoco">~450 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="food-line">🥗 Salada de folhas 40g</div>
+          <div class="food-line">🍚 Arroz 75g <span style="color:var(--text3);">ou batata inglesa 210g ou batata doce 147g ou macarrão 100g</span></div>
+          <div class="food-line">🫘 Leguminosas 1 porção</div>
+          <div class="food-line">🥩 Proteína texturizada de soja 90g <span style="color:var(--text3);">ou 3 ovos cozidos</span></div>
+          <div style="margin-top:8px;padding:8px 10px;background:var(--bg4);border-radius:var(--rxs);font-size:12px;color:var(--text2);">💡 Marmita Beleaf: até 400 kcal e mínimo 20g proteína</div>
+        </div>
+        <button class="meal-log-btn" onclick="logMeal('almoco',450,28,55,10)">✓ Marcar como consumido</button>
+      </div>
+
+      <div class="sec-label">15:30 — lanche da tarde</div>
+      <div class="card" id="meal-lanche">
+        <div class="meal-header">
+          <span class="meal-time">15:30</span>
+          <span class="meal-name">Lanche da tarde 🌟</span>
+          <span class="meal-kcal-badge" id="kcal-lanche">~320 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="option-label">Opção 1 — iogurte</div>
+          <div class="food-line">🥛 Iogurte natural Nestlé 100ml + 🍓 2 frutas + Whey 24g + Granola Tia Sonia 20g</div>
+          <div class="option-label" style="margin-top:8px;">Opção 2 — crepioca</div>
+          <div class="food-line">Tapioca 50g + 2 ovos + queijo muçarela + cottage</div>
+          <div class="option-label" style="margin-top:8px;">Opção 3 — panqueca de banana</div>
+          <div class="food-line">🍌 Banana + aveia 15g + ovo + Whey 30g + mel/geleia</div>
+          <div class="option-label" style="margin-top:8px;">Opção 4 — sanduíche patê de ovo</div>
+          <div class="food-line">2 ovos + muçarela + cottage + pão francês 50g (patê: ovos+cottage+tomate+cenoura+mostarda)</div>
+          <div style="margin-top:8px;padding:8px 10px;background:rgba(201,168,76,0.08);border-radius:var(--rxs);font-size:12px;color:var(--gold2);">⭐ Capricha neste lanche! Objetivo da nutricionista.</div>
+        </div>
+        <button class="meal-log-btn" onclick="logMeal('lanche',320,28,32,8)">✓ Marcar como consumido</button>
+      </div>
+
+      <div class="sec-label">20:00 — jantar</div>
+      <div class="card" id="meal-jantar">
+        <div class="meal-header">
+          <span class="meal-time">20:00</span>
+          <span class="meal-name">Jantar</span>
+          <span class="meal-kcal-badge" id="kcal-jantar">~380 kcal</span>
+        </div>
+        <div class="meal-body">
+          <div class="option-label">Opção 1 — prato colorido</div>
+          <div class="food-line">🍚 Arroz 75g + 🫘 leguminosas 2 porções + 🥚 1 ovo cozido + 🥗 salada + semente de abóbora 10g</div>
+          <div class="option-label" style="margin-top:8px;">Opção 2 — hambúrguer de PTS</div>
+          <div class="food-line">PTS hidratada 60g + salada + milho 48g + batata/quinoa + azeite + 🍓 fruta</div>
+          <div class="option-label" style="margin-top:8px;">Opção 3 — crepioca</div>
+          <div class="food-line">Tapioca 40g + chia 3g + 2 ovos + 🍓 fruta</div>
+          <div style="margin-top:8px;padding:8px 10px;background:var(--bg4);border-radius:var(--rxs);font-size:12px;color:var(--text2);">💡 Fruta de sobremesa para bater o carbo necessário para o treino em jejum do dia seguinte</div>
+        </div>
+        <button class="meal-log-btn" onclick="logMeal('jantar',380,22,50,9)">✓ Marcar como consumido</button>
+      </div>
+
+      <!-- SUPLEMENTAÇÃO -->
+      <div class="sec-label">suplementação</div>
+      <div class="card">
+        <div class="tog-row">
+          <div class="tog-info"><div class="tog-name">Creatina</div><div class="tog-dose">— não consta no cardápio atual</div></div>
+          <div class="ios-tog" id="t1" onclick="toggleT('t1')"><div class="ios-tog-thumb"></div></div>
+        </div>
+        <div class="tog-row">
+          <div class="tog-info"><div class="tog-name">Ultracoffee pré-treino</div><div class="tog-dose">1 dosador (10g) · 30min antes</div></div>
+          <div class="ios-tog" id="t2" onclick="toggleT('t2')"><div class="ios-tog-thumb"></div></div>
+        </div>
+        <div class="tog-row">
+          <div class="tog-info"><div class="tog-name">Whey Protein</div><div class="tog-dose">Fresh Whey Dux avelã · 0,5 dose no café · 2 doses no lanche</div></div>
+          <div class="ios-tog" id="t3" onclick="toggleT('t3')"><div class="ios-tog-thumb"></div></div>
+        </div>
+        <div class="tog-row">
+          <div class="tog-info"><div class="tog-name">Gel de carboidrato</div><div class="tog-dose">Treino &gt;1h10: 1 gel no min 35 · &gt;1h30: 2 géis (min 35 e 70-75)</div></div>
+          <div class="ios-tog" id="t4" onclick="toggleT('t4')"><div class="ios-tog-thumb"></div></div>
+        </div>
+        <div class="tog-row">
+          <div class="tog-info"><div class="tog-name">Eletrólitos</div><div class="tog-dose">1 sachê + 300ml água · dias quentes ou muita sede · após treino</div></div>
+          <div class="ios-tog" id="t5" onclick="toggleT('t5')"><div class="ios-tog-thumb"></div></div>
+        </div>
+        <div class="tog-row" style="border:none;">
+          <div class="tog-info">
+            <div class="tog-name">Gel · marcas sugeridas</div>
+            <div class="tog-dose">paceit (cupom: nutrihelenacoelho) · Z2 (z2helenacoelho) · Maurten · DOBRO · MOMBORA</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 16px 10px;"><button class="btn btn-ghost" onclick="quickAsk('Hoje é dia de treino longo. Qual gel devo usar e quando? Tenho as marcas paceit, maurten e Z2.')">Estratégia de gel IA ✦</button></div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- ═══════════ SAÚDE ═══════════ -->
+    <div class="page" id="page-saude">
+      <div style="padding:14px 20px 8px;">
+        <div class="disp" style="font-size:38px;">Saúde</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:3px;">Apple Health · Garmin · Ringconn</div>
+      </div>
+
+      <!-- APPLE HEALTH UPLOAD -->
+      <div class="sec-label">upload diário · apple health</div>
+      <label style="display:block;">
+        <input type="file" id="health-file" accept=".xml,.zip" style="display:none;" onchange="processHealth(this)">
+        <div class="upload-area">
+          <div class="upload-icon">🍎</div>
+          <div class="upload-title">Exportar do Apple Health</div>
+          <div class="upload-sub" style="margin-bottom:16px;">Saúde app → Perfil → Exportar dados<br>Envie o arquivo <strong style="color:var(--text);">export.xml</strong></div>
+          <div class="btn btn-gold" style="max-width:280px;margin:0 auto;">Carregar arquivo ↑</div>
+        </div>
+      </label>
+
+      <div id="health-result" style="display:none;">
+        <div class="sec-label">dados importados</div>
+        <div class="card" id="health-card"></div>
+        <div class="ai-bubble" id="health-ai-bubble" style="display:none;"><div class="ai-label">análise de saúde</div></div>
+      </div>
+
+      <!-- MANUAL -->
+      <div class="sec-label">registro manual</div>
+      <div class="card" style="padding:6px 0;">
+        <div class="sl-block">
+          <div class="sl-top"><span class="sl-name">🌙 sono</span><span class="sl-val" id="v-sono">—</span></div>
+          <input type="range" min="4" max="11" step=".5" value="7.5" id="sl-sono" oninput="updSono()">
+        </div>
+        <div class="sl-block">
+          <div class="sl-top"><span class="sl-name">❤️ hrv</span><span class="sl-val" id="v-hrv">—</span></div>
+          <input type="range" min="20" max="120" step="1" value="62" id="sl-hrv" oninput="updHrv()">
+        </div>
+        <div class="sl-block">
+          <div class="sl-top"><span class="sl-name">💧 água</span><span class="sl-val" id="v-agua">—</span></div>
+          <input type="range" min="0" max="4" step=".1" value="1.8" id="sl-agua" oninput="updAgua()">
+        </div>
+        <div class="sl-block" style="border:none;">
+          <div class="sl-top"><span class="sl-name">⚡️ energia</span><span class="sl-val" id="v-energia">—</span></div>
+          <input type="range" min="1" max="5" step="1" value="3" id="sl-energia" oninput="updEnergia()">
+        </div>
+        <div style="padding:0 16px 16px;"><button class="btn btn-gold" onclick="salvarDia()">Salvar registro do dia</button></div>
+      </div>
+
+      <!-- TREINO UPLOAD -->
+      <div class="sec-label">upload semanal · treinos</div>
+      <label style="display:block;">
+        <input type="file" id="treino-file" accept=".pdf,.csv,.xlsx,.txt,.gpx" style="display:none;" onchange="processTreino(this)">
+        <div class="upload-area" style="padding:20px;">
+          <div class="upload-icon">🏃‍♀️</div>
+          <div class="upload-title" style="font-size:18px;">Planilha de treinos</div>
+          <div class="upload-sub" style="margin-bottom:12px;">Sisrun · PDF · CSV · GPX · qualquer formato</div>
+          <div class="btn btn-ghost" style="max-width:280px;margin:0 auto;">Carregar treinos da semana ↑</div>
+        </div>
+      </label>
+      <div id="treino-result" style="display:none;"><div class="ai-bubble" id="treino-ai-bubble"><div class="ai-label">análise do plano</div></div></div>
+
+      <!-- CICLO -->
+      <div class="sec-label">ciclo menstrual</div>
+      <div class="card" style="padding:16px 20px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+          <div class="label-caps">próximo ciclo em</div>
+          <div class="disp" style="font-size:38px;color:var(--rose);">7 dias</div>
+        </div>
+        <div class="cycle-phases">
+          <div class="c-phase" style="background:rgba(255,179,71,.08);color:var(--amber);"><div class="c-name">Folicular</div><div class="c-days">1–13</div></div>
+          <div class="c-phase" style="background:rgba(57,255,126,.08);color:var(--vital);"><div class="c-name">Ovulação</div><div class="c-days">14–16</div></div>
+          <div class="c-phase now" style="background:rgba(255,107,138,.08);color:var(--rose);"><div class="c-name">Lútea ←</div><div class="c-days">17–28</div></div>
+        </div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.65;margin-top:8px;">Fase lútea agora. Maratona em 20/09 deve cair na <strong style="color:var(--vital);">fase folicular</strong> — seu pico de performance. ✦</div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- ═══════════ TREINO ═══════════ -->
+    <div class="page" id="page-treino">
+      <div style="padding:14px 20px 8px;">
+        <div class="disp" style="font-size:38px;">Treino</div>
+      </div>
+
+      <div class="sec-label">corrida · semana atual</div>
+      <div class="card">
+        <div class="row"><div style="width:5px;height:5px;border-radius:50%;background:var(--vital);flex-shrink:0;"></div><div class="row-label">Segunda</div><span class="badge" style="background:var(--vital-dim);color:var(--vital);">Leve 8km Z2</span></div>
+        <div class="row"><div style="width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div><div class="row-label">Terça</div><span class="badge" style="background:var(--amber-dim);color:var(--amber);">Fortalecimento</span></div>
+        <div class="row"><div style="width:5px;height:5px;border-radius:50%;background:var(--sky);flex-shrink:0;"></div><div class="row-label">Quarta</div><span class="badge" style="background:var(--sky-dim);color:var(--sky);">Intervalado 6×1km</span></div>
+        <div class="row"><div style="width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div><div class="row-label">Quinta</div><span class="badge" style="background:var(--amber-dim);color:var(--amber);">Fortalecimento</span></div>
+        <div class="row"><div style="width:5px;height:5px;border-radius:50%;background:var(--sky);flex-shrink:0;"></div><div class="row-label">Sexta</div><span class="badge" style="background:var(--sky-dim);color:var(--sky);">Tempo run 14km</span></div>
+        <div class="row"><div style="width:5px;height:5px;border-radius:50%;background:var(--rose);flex-shrink:0;"></div><div class="row-label">Sábado</div><span class="badge" style="background:var(--rose-dim);color:var(--rose);">Long run 28km</span></div>
+        <div class="row" style="border:none;"><div style="width:5px;height:5px;border-radius:50%;background:var(--bg5);flex-shrink:0;"></div><div class="row-label">Domingo</div><span class="badge" style="background:var(--bg4);color:var(--text3);">Descanso ativo</span></div>
+      </div>
+
+      <div class="sec-label">fortalecimento · ter & qui</div>
+      <div class="card">
+        <div style="padding:10px 20px 8px;"><span class="badge" style="background:var(--amber-dim);color:var(--amber);">3 séries × 12 reps</span> <span class="badge" style="background:var(--lilac-dim);color:var(--lilac);margin-left:4px;">foco posterior + glúteo</span></div>
+        <div class="row"><div class="row-label">Agachamento búlgaro</div><div class="row-val">3×12 cada</div></div>
+        <div class="row"><div class="row-label">Elevação pélvica</div><div class="row-val">3×15</div></div>
+        <div class="row"><div class="row-label">Panturrilha unilateral</div><div class="row-val">3×20</div></div>
+        <div class="row"><div class="row-label">Deadlift romeno</div><div class="row-val">3×10</div></div>
+        <div class="row"><div class="row-label">Prancha lateral</div><div class="row-val">3×30s</div></div>
+        <div class="row"><div class="row-label">Monster walk (band)</div><div class="row-val">3×15</div></div>
+        <div class="row"><div class="row-label">Agachamento sumô</div><div class="row-val">3×12</div></div>
+        <div class="row" style="border:none;"><div class="row-label">Mobilidade de quadril</div><div class="row-val">5min</div></div>
+      </div>
+
+      <div class="sec-label">registrar treino garmin</div>
+      <div class="card" style="padding:6px 0;">
+        <div class="sl-block">
+          <div class="sl-top"><span class="sl-name">distância</span><span class="sl-val" id="v-dist">0 km</span></div>
+          <input type="range" min="0" max="42" step=".5" value="0" id="sl-dist" oninput="document.getElementById('v-dist').textContent=parseFloat(this.value).toFixed(1)+' km'">
+        </div>
+        <div class="sl-block">
+          <div class="sl-top"><span class="sl-name">pace médio</span><span class="sl-val" id="v-pace">5:30/km</span></div>
+          <input type="range" min="4" max="8" step=".05" value="5.5" id="sl-pace" oninput="updPace()">
+        </div>
+        <div class="sl-block" style="border:none;">
+          <div class="sl-top"><span class="sl-name">fc média</span><span class="sl-val" id="v-fc">145 bpm</span></div>
+          <input type="range" min="100" max="185" step="1" value="145" id="sl-fc" oninput="document.getElementById('v-fc').textContent=this.value+' bpm'">
+        </div>
+        <div style="padding:0 16px 16px;display:flex;gap:8px;">
+          <button class="btn btn-ghost-vital" onclick="analisarTreino()" style="flex:1;">Analisar IA ✦</button>
+          <button class="btn btn-ghost" onclick="calcNutricaoTreino()" style="flex:1;">Nutrição ✦</button>
+        </div>
+      </div>
+      <div id="ai-treino-wrap" style="display:none;"><div class="ai-bubble" id="ai-treino-bubble"><div class="ai-label">análise garmin</div></div></div>
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- ═══════════ INSIGHTS ═══════════ -->
+    <div class="page" id="page-insights">
+      <div style="padding:14px 20px 8px;">
+        <div class="disp" style="font-size:38px;"><em>Insights</em></div>
+      </div>
+
+      <div style="padding:0 16px 10px;display:flex;gap:8px;">
+        <input class="inp" id="ia-input" placeholder="Pergunte sobre dieta, treino, ciclo..." onkeydown="if(event.key==='Enter')perguntarIA()" style="flex:1;">
+        <button class="btn btn-gold" onclick="perguntarIA()" style="width:auto;padding:0 18px;font-size:13px;">✦</button>
+      </div>
+      <div id="ai-ins-wrap" style="display:none;"><div class="ai-bubble" id="ai-ins-bubble"><div class="ai-label">coach ia</div></div></div>
+
+      <div class="sec-label">ações rápidas</div>
+      <div class="qa-grid" style="margin-bottom:12px;">
+        <button class="qa-btn" onclick="quickAsk('Com base no meu cardápio (Helena Coelho), o que devo comer agora para bater minha meta calórica? Estou na fase lútea.')">O que comer agora ✦</button>
+        <button class="qa-btn" onclick="quickAsk('Estratégia de gel para o long run de sábado. Quais marcas usar e quando?')">Géis no long run ✦</button>
+        <button class="qa-btn" onclick="quickAsk('Carbo-loading para a semana antes da maratona de 20/09')">Carbo-loading ✦</button>
+        <button class="qa-btn" onclick="quickAsk('Adaptações de treino e alimentação na fase lútea para maratonistas')">Fase lútea × corrida ✦</button>
+        <button class="qa-btn" onclick="quickAsk('O que comer antes, durante e depois de um long run de 28km? Baseado no meu cardápio da Helena Coelho.')">Nutrição long run ✦</button>
+        <button class="qa-btn" onclick="quickAsk('Cuidados com proteína no fim de semana segundo meu cardápio. Como melhorar?')">Proteína fim de semana ✦</button>
+        <button class="qa-btn" onclick="quickAsk('Como adaptar eletrólitos e géis para dias muito quentes no treino?')">Eletrólitos dias quentes ✦</button>
+        <button class="qa-btn" onclick="quickAsk('Progressão de long run para maratona de 20/09. Quanto aumentar por semana?')">Progressão long run ✦</button>
+      </div>
+
+      <div class="sec-label">insights · hoje</div>
+      <div class="card">
+        <div class="ins-row">
+          <div class="ins-cat" style="color:var(--gold);">cardápio · helena coelho</div>
+          <div class="ins-text"><strong>Objetivo duplo:</strong> emagrecimento + performance. Atenção ao lanche da tarde — é a refeição que a nutricionista pediu para caprichar. Evite beliscos no fim de semana.</div>
+        </div>
+        <div class="ins-row">
+          <div class="ins-cat" style="color:var(--rose);">ciclo · fase lútea</div>
+          <div class="ins-text">Fase atual. Aumente magnésio, priorize sono. A <strong>maratona em 20/09 deve cair na fase folicular</strong> — pico de performance.</div>
+        </div>
+        <div class="ins-row">
+          <div class="ins-cat" style="color:var(--vital);">suplementação</div>
+          <div class="ins-text">Testar géis com <strong>maior quantidade de carboidrato</strong> (paceit e maurten) nos treinos longos — nunca pela primeira vez em prova.</div>
+        </div>
+        <div class="ins-row" style="border:none;">
+          <div class="ins-cat" style="color:var(--sky);" id="ins-days-cat">maratona</div>
+          <div class="ins-text" id="ins-days-text">Fase de construção. Long runs semanais são a prioridade.</div>
+        </div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <div class="tab-item active" id="tab-home" onclick="goTab('home')">
+      <div class="tab-bar-line"></div><div class="tab-icon">◎</div><div class="tab-label">Início</div>
+    </div>
+    <div class="tab-item" id="tab-dieta" onclick="goTab('dieta')">
+      <div class="tab-bar-line"></div><div class="tab-icon">◈</div><div class="tab-label">Dieta</div>
+    </div>
+    <div class="tab-item" id="tab-saude" onclick="goTab('saude')">
+      <div class="tab-bar-line"></div><div class="tab-icon">♡</div><div class="tab-label">Saúde</div>
+    </div>
+    <div class="tab-item" id="tab-treino" onclick="goTab('treino')">
+      <div class="tab-bar-line"></div><div class="tab-icon">◐</div><div class="tab-label">Treino</div>
+    </div>
+    <div class="tab-item" id="tab-insights" onclick="goTab('insights')">
+      <div class="tab-bar-line"></div><div class="tab-icon">✦</div><div class="tab-label">Insights</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+const META_KCAL=1800;
+let totalKcal=0,totalProt=0,totalCarb=0,totalFat=0;
+const loggedMeals=new Set();
+
+// ── DATE + COUNTDOWN ──
+const marathon=new Date('2025-09-20');
+const today=new Date();
+const daysLeft=Math.ceil((marathon-today)/86400000);
+document.getElementById('home-days').textContent=daysLeft;
+const months=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const daysFull=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+document.getElementById('home-date-el').innerHTML=`${daysFull[today.getDay()]},<br><em>${today.getDate()} ${months[today.getMonth()]}</em>`;
+document.getElementById('ins-days-cat').textContent=`maratona · ${daysLeft} dias`;
+document.getElementById('ins-days-text').textContent=`Faltam ${daysLeft} dias. ${daysLeft>21?'Fase de construção — long runs semanais são prioridade.':'Fase de redução. Diminua volume, mantenha intensidade e aumente calorias para manutenção.'}`;
+
+// ── WEEK STRIP ──
+const dayNames=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const strip=document.getElementById('week-strip');
+const dow=today.getDay();
+for(let i=0;i<7;i++){
+  const d=new Date(today);d.setDate(today.getDate()-dow+i);
+  const el=document.createElement('div');
+  el.className='day-pill'+(i===dow?' today':i<dow?' done':'');
+  el.innerHTML=`<div class="dn">${dayNames[i]}</div><div class="dd">${d.getDate()}</div>`;
+  strip.appendChild(el);
+}
+
+// ── NAV ──
+function goTab(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  document.getElementById('screen').scrollTo({top:0,behavior:'instant'});
+}
+
+function toggleT(id){document.getElementById(id).classList.toggle('on');}
+
+// ── MACROS ──
+function updMacros(){
+  const pct=Math.min(100,Math.round(totalKcal/META_KCAL*100));
+  const rest=Math.max(0,Math.round(META_KCAL-totalKcal));
+  ['h-bar','d-bar'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.width=pct+'%';});
+  document.getElementById('h-kcal').textContent=Math.round(totalKcal);
+  document.getElementById('h-rest').textContent=rest;
+  document.getElementById('d-kcal').textContent=Math.round(totalKcal);
+  document.getElementById('d-rest-kcal').textContent=rest+' kcal';
+  ['prot','carb','fat'].forEach(m=>{
+    const v=m==='prot'?totalProt:m==='carb'?totalCarb:totalFat;
+    ['h-','d-'].forEach(p=>{const el=document.getElementById(p+m);if(el)el.textContent=Math.round(v)+'g';});
+  });
+}
+
+// ── MEAL LOG ──
+function logMeal(id,kcal,prot,carb,fat){
+  if(loggedMeals.has(id))return;
+  loggedMeals.add(id);
+  totalKcal+=kcal;totalProt+=prot;totalCarb+=carb;totalFat+=fat;
+  updMacros();
+  const btn=document.querySelector(`#meal-${id} .meal-log-btn`);
+  if(btn){
+    const logged=document.createElement('div');
+    logged.className='meal-logged';
+    logged.innerHTML='✓ Registrado · +'+kcal+' kcal · +'+prot+'g prot · +'+carb+'g carbo';
+    btn.replaceWith(logged);
+  }
+}
+
+// ── RING ──
+function setRing(id,pct){
+  const circ=163;
+  const el=document.getElementById(id);
+  if(el)el.style.strokeDashoffset=circ-(circ*Math.min(1,Math.max(0,pct)));
+}
+
+// ── VITALS ──
+function updSono(){const v=parseFloat(document.getElementById('sl-sono').value);document.getElementById('v-sono').textContent=v.toFixed(1)+'h';document.getElementById('h-sono').textContent=v.toFixed(1)+'h';setRing('r-sono',(v-4)/7);}
+function updHrv(){const v=parseInt(document.getElementById('sl-hrv').value);document.getElementById('v-hrv').textContent=v;document.getElementById('h-hrv').textContent=v;setRing('r-hrv',v/120);}
+function updAgua(){const v=parseFloat(document.getElementById('sl-agua').value);document.getElementById('v-agua').textContent=v.toFixed(1)+'L';document.getElementById('h-agua').textContent=v.toFixed(1)+'L';setRing('r-agua',v/2.5);}
+function updEnergia(){const v=parseInt(document.getElementById('sl-energia').value);document.getElementById('v-energia').textContent=v+'/5';document.getElementById('h-energia').textContent=v+'/5';setRing('r-energia',v/5);}
+function updPace(){const v=parseFloat(document.getElementById('sl-pace').value);const min=Math.floor(v);const sec=Math.round((v-min)*60);document.getElementById('v-pace').textContent=min+':'+(sec<10?'0':'')+sec+'/km';}
+
+function salvarDia(){const b=event.target;b.textContent='✓ Salvo';b.style.background='var(--vital)';b.style.color='var(--bg)';setTimeout(()=>{b.textContent='Salvar registro do dia';b.style.background='';b.style.color='';},2200);}
+
+// ── APPLE HEALTH ──
+async function processHealth(input){
+  const file=input.files[0];if(!file)return;
+  const res=document.getElementById('health-result');
+  const card=document.getElementById('health-card');
+  res.style.display='block';
+  card.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);"><span class="spin"></span> lendo arquivo...</div>';
+
+  if(file.name.endsWith('.zip')){
+    card.innerHTML=`<div style="padding:20px;font-size:14px;color:var(--text2);line-height:1.8;">Arquivo ZIP recebido.<br><br>Extraia o ZIP e envie o arquivo <strong style="color:var(--text);">export.xml</strong> que fica dentro da pasta <span style="color:var(--gold);font-family:monospace;">apple_health_export/</span></div>`;
+    return;
+  }
+  try{
+    const xml=await file.text();
+    const doc=new DOMParser().parseFromString(xml,'text/xml');
+    const records=doc.querySelectorAll('Record');
+    const typeMap={
+      'HKQuantityTypeIdentifierHeartRateVariabilitySDNN':{name:'HRV',unit:'ms',color:'var(--vital)',ring:'r-hrv',max:120},
+      'HKQuantityTypeIdentifierRestingHeartRate':{name:'FC Repouso',unit:'bpm',color:'var(--rose)',max:100},
+      'HKQuantityTypeIdentifierBodyMass':{name:'Peso',unit:'kg',color:'var(--gold)',max:100},
+      'HKQuantityTypeIdentifierStepCount':{name:'Passos',unit:'',color:'var(--sky)',max:10000},
+      'HKQuantityTypeIdentifierActiveEnergyBurned':{name:'Cal. Ativas',unit:'kcal',color:'var(--amber)',max:600},
+      'HKQuantityTypeIdentifierOxygenSaturation':{name:'SpO2',unit:'%',color:'var(--sky)',max:100},
+    };
+    const recent={};
+    records.forEach(r=>{
+      const type=r.getAttribute('type');
+      if(typeMap[type]){
+        const date=new Date(r.getAttribute('startDate'));
+        if(!recent[type]||date>recent[type].date) recent[type]={value:parseFloat(r.getAttribute('value')),date};
+      }
+    });
+
+    // Sleep
+    const sleepRecs=doc.querySelectorAll('CategorySample[type="HKCategoryTypeIdentifierSleepAnalysis"]');
+    let sleepMin=0;
+    sleepRecs.forEach(s=>{
+      const start=new Date(s.getAttribute('startDate')),end=new Date(s.getAttribute('endDate'));
+      const diff=(end-start)/60000;
+      if(diff>0&&diff<600)sleepMin+=diff;
+    });
+
+    let html='';
+    if(sleepMin>0){
+      const sh=(sleepMin/60).toFixed(1);
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:.5px solid var(--sep);"><span style="font-size:13px;color:var(--text2);">Sono</span><span style="font-family:var(--disp);font-size:20px;color:var(--rose);">${sh}<span style="font-size:13px;color:var(--text3);"> h</span></span></div>`;
+      document.getElementById('h-sono').textContent=sh+'h';
+      setRing('r-sono',(parseFloat(sh)-4)/7);
+    }
+    Object.entries(recent).forEach(([type,data])=>{
+      const m=typeMap[type];
+      const val=isNaN(data.value)?'—':data.value.toFixed(1).replace(/\.0$/,'');
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:.5px solid var(--sep);"><span style="font-size:13px;color:var(--text2);">${m.name}</span><span style="font-family:var(--disp);font-size:20px;color:${m.color};">${val}<span style="font-size:13px;color:var(--text3);"> ${m.unit}</span></span></div>`;
+      if(m.ring){document.getElementById('h-hrv').textContent=val;setRing(m.ring,data.value/m.max);}
+    });
+
+    card.innerHTML=html||'<div style="padding:20px;color:var(--text3);font-size:14px;">Nenhum dado reconhecido. Envie o export.xml correto.</div>';
+
+    // AI analysis
+    if(html){
+      const aiWrap=document.getElementById('health-ai-bubble');
+      aiWrap.style.display='block';
+      aiWrap.innerHTML='<div class="ai-label">análise de saúde</div><span class="spin"></span> analisando seus dados...';
+      const summary=Object.entries(recent).map(([t,d])=>typeMap[t]?`${typeMap[t].name}: ${d.value.toFixed(1)} ${typeMap[t].unit}`:'').filter(Boolean).join(', ')+(sleepMin?`, sono: ${(sleepMin/60).toFixed(1)}h`:'');
+      try{
+        const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:350,system:`Coach de saúde para Sthefany Serrão, atleta mulher, primeira maratona em 20/09 (${daysLeft} dias). Fase lútea, ciclo em 7 dias. Cardápio da nutricionista Helena Coelho (foco emagrecimento + performance). Analise os dados de saúde do Apple Health e dê 3 insights diretos em português.`,messages:[{role:'user',content:`Dados de hoje: ${summary}`}]})});
+        const d=await r.json();
+        aiWrap.innerHTML='<div class="ai-label">análise de saúde</div>'+d.content[0].text;
+      }catch(e){aiWrap.innerHTML='<div class="ai-label">análise</div>Dados importados com sucesso!';}
+    }
+  }catch(e){card.innerHTML='<div style="padding:20px;color:var(--rose);font-size:14px;">Erro ao ler arquivo. Certifique-se que é o export.xml do Apple Health.</div>';}
+}
+
+// ── TREINO FILE ──
+async function processTreino(input){
+  const file=input.files[0];if(!file)return;
+  const wrap=document.getElementById('treino-result');
+  const bubble=document.getElementById('treino-ai-bubble');
+  wrap.style.display='block';
+  bubble.innerHTML='<div class="ai-label">análise do plano</div><span class="spin"></span> analisando treinos...';
+  try{
+    const text=await file.text();
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:`Coach de corrida para Sthefany, primeira maratona em 20/09 (${daysLeft} dias). Analise a planilha de treinos enviada e dê: 1) resumo da semana 2) cargas principais 3) alerta de sobrecarga se houver 4) sugestão de nutrição para os treinos principais. Máximo 5 frases em português.`,messages:[{role:'user',content:'Planilha de treinos:\n'+text.slice(0,3000)}]})});
+    const d=await r.json();
+    bubble.innerHTML='<div class="ai-label">análise do plano</div>'+d.content[0].text;
+  }catch(e){bubble.innerHTML='<div class="ai-label">análise</div>Arquivo recebido! Formatos mais legíveis: .txt, .csv ou .gpx.';}
+}
+
+// ── TREINO AI ──
+async function analisarTreino(){
+  const dist=document.getElementById('v-dist').textContent;
+  const pace=document.getElementById('v-pace').textContent;
+  const fc=document.getElementById('v-fc').textContent;
+  const wrap=document.getElementById('ai-treino-wrap');
+  const bubble=document.getElementById('ai-treino-bubble');
+  wrap.style.display='block';
+  bubble.innerHTML='<div class="ai-label">análise garmin</div><span class="spin"></span>';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:350,system:`Coach de corrida para Sthefany, primeira maratona em 20/09 (${daysLeft} dias). Fase lútea. Análise direta em 3-4 frases em português. Inclua zona de FC e recuperação necessária.`,messages:[{role:'user',content:`Treino: ${dist}, pace ${pace}, FC ${fc}.`}]})});
+    const d=await r.json();
+    bubble.innerHTML='<div class="ai-label">análise garmin</div>'+d.content[0].text;
+  }catch(e){bubble.innerHTML='<div class="ai-label">erro</div>Tente novamente.';}
+}
+
+async function calcNutricaoTreino(){
+  const dist=document.getElementById('v-dist').textContent;
+  const wrap=document.getElementById('ai-treino-wrap');
+  const bubble=document.getElementById('ai-treino-bubble');
+  wrap.style.display='block';
+  bubble.innerHTML='<div class="ai-label">nutrição do treino</div><span class="spin"></span>';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:`Nutricionista esportiva para Sthefany. Cardápio Helena Coelho: pré-treino 06h (Ultracoffee), café 08h, almoço 12h, lanche 15h30, jantar 20h. Suplementação: géis >1h10 de treino (paceit, maurten, Z2), eletrólitos dias quentes. Resposta direta em português.`,messages:[{role:'user',content:`O que comer antes, durante e depois de um treino de ${dist}? Considere o cardápio e os géis disponíveis.`}]})});
+    const d=await r.json();
+    bubble.innerHTML='<div class="ai-label">nutrição do treino</div>'+d.content[0].text;
+  }catch(e){bubble.innerHTML='<div class="ai-label">erro</div>Tente novamente.';}
+}
+
+// ── INSIGHTS AI ──
+async function perguntarIA(){
+  const q=document.getElementById('ia-input').value.trim();if(!q)return;
+  const wrap=document.getElementById('ai-ins-wrap');
+  const bubble=document.getElementById('ai-ins-bubble');
+  wrap.style.display='block';
+  bubble.innerHTML='<div class="ai-label">coach ia</div><span class="spin"></span>';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:`Coach de saúde e performance para Sthefany Serrão. Primeira maratona em 20/09 (${daysLeft} dias). Fase lútea, novo ciclo em 7 dias. Cardápio da nutricionista Helena Coelho (objetivo: emagrecimento + performance). Suplementação: Ultracoffee pré-treino, Whey Dux avelã, géis de carbo (paceit/maurten/Z2) em treinos >1h10, eletrólitos. Metas: testar géis com mais carbo, caprichar no lanche da tarde, cuidar da proteína no fim de semana. Garmin + Ringconn + Apple Health. Resposta direta, máximo 5 frases em português.`,messages:[{role:'user',content:q}]})});
+    const d=await r.json();
+    bubble.innerHTML='<div class="ai-label">coach ia</div>'+d.content[0].text;
+    document.getElementById('ia-input').value='';
+  }catch(e){bubble.innerHTML='<div class="ai-label">erro</div>Tente novamente.';}
+}
+
+function quickAsk(q){document.getElementById('ia-input').value=q;goTab('insights');setTimeout(perguntarIA,80);}
+</script>
+</body>
+</html>
